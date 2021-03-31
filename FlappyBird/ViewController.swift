@@ -6,12 +6,23 @@
 //
 
 import UIKit
+import SpriteKit
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        // ViewをSKviewに変換
+        let skView = self.view as! SKView
+        
+        // FPS,node数の表示
+        skView.showsFPS = true
+        skView.showsNodeCount = true
+        
+        let scene = SKScene(size: skView.frame.size)
+        
+        skView.presentScene(scene)
     }
 
 
