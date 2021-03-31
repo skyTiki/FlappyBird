@@ -20,14 +20,20 @@ class GameScene: SKScene {
         scrollNode = SKNode()
         addChild(scrollNode)
         
+        setGround()
+        setClound()
+    }
+    
+    
+    private func setGround() {
         
-        // 地面Textureの生成
+        // Textureの生成
         let groundTexture = SKTexture(imageNamed: "ground")
         groundTexture.filteringMode = .nearest
         
         
         // スクロール用にどのくらい画像を用意する必要があるか +2は右側で見切れないように追加している
-        let needScroolImageCount = Int(self.frame.size.width / groundTexture.size().width) + 2
+        let needImageCount = Int(self.frame.size.width / groundTexture.size().width) + 2
         
         
         // スクロールのアクションを作成
@@ -44,7 +50,7 @@ class GameScene: SKScene {
         
         // SpriteNodeを生成
         //　必要な枚数分作成し、アクションを設定する
-        for i in 0..<needScroolImageCount {
+        for i in 0..<needImageCount {
             let groundNode = SKSpriteNode(texture: groundTexture)
             // ポジション設定
             groundNode.position = .init(x: groundTexture.size().width / 2 + groundTexture.size().width * CGFloat(i),
@@ -56,5 +62,39 @@ class GameScene: SKScene {
             // シーンに追加
             scrollNode.addChild(groundNode)
         }
+    }
+    
+    private func setClound() {
+        
+        // Textureを生成
+        let cloudTexeture = SKTexture(imageNamed: "cloud")
+        cloudTexeture.filteringMode = .nearest
+        
+        
+        // 必要な枚数の数を用意
+        let needImageCount = Int(self.frame.width / cloudTexeture.size().width) + 2
+        
+        // action生成
+        let moveCloudAction = SKAction.moveBy(x: -cloudTexeture.size().width, y: 0, duration: 5)
+        let resetCloudAction = SKAction.moveBy(x: cloudTexeture.size().width, y: 0, duration: 0)
+        
+        let repeatCloudScrollAction = SKAction.repeatForever(SKAction.sequence([moveCloudAction, resetCloudAction]))
+        
+        // ループで必要な数Node作成
+        for i in 0..<needImageCount {
+            
+            // nodeの作成
+            let cloudSpriteNode = SKSpriteNode(texture: cloudTexeture)
+            // 再背面に設定
+            cloudSpriteNode.zPosition = -100
+            cloudSpriteNode.position = .init(x: cloudTexeture.size().width / 2 + cloudTexeture.size().width * CGFloat(i), y: self.frame.height - cloudTexeture.size().height / 2)
+            
+            // アクション設定
+            cloudSpriteNode.run(repeatCloudScrollAction)
+            
+            scrollNode.addChild(cloudSpriteNode)
+            
+        }
+        
     }
 }
