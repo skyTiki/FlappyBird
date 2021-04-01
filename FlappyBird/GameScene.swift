@@ -17,10 +17,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     
     // 衝突判定カテゴリー
-    let birdCategory: UInt32 = 1 << 0 // 0...0001
-    let groundCategory: UInt32 = 1 << 1 // 0....0010
-    let wallCategory: UInt32 = 1 << 2 // 0...0100
-    let scoreCategory: UInt32 = 1 << 3 // 0...1000
+    let birdCategory: UInt32 = 1 << 0 // 0...0001 → 1
+    let groundCategory: UInt32 = 1 << 1 // 0....0010 → 2
+    let wallCategory: UInt32 = 1 << 2 // 0...0100 → 4
+    let scoreCategory: UInt32 = 1 << 3 // 0...1000 → 8
     
     // スコア用
     var score = 0
@@ -30,6 +30,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // 重力を設定
         physicsWorld.gravity = CGVector(dx: 0, dy: -4)
+        // 衝突時のデリゲートメソッド使用
         physicsWorld.contactDelegate = self
         
         
@@ -37,11 +38,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // スクロール用のノードをインスタンス化し、親Viewに設定
         scrollNode = SKNode()
-        addChild(scrollNode)
-        
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
+        addChild(scrollNode)
         
+        // ノードの設定
         setGround()
         setClound()
         setWall()
