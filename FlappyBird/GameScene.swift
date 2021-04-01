@@ -7,7 +7,7 @@
 
 import SpriteKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // スクロール用のノードをまとめたノード
     var scrollNode: SKNode!
@@ -15,11 +15,23 @@ class GameScene: SKScene {
     
     var bird: SKSpriteNode!
     
+    
+    // 衝突判定カテゴリー
+    let birdCategory: UInt32 = 1 << 0 // 0...0001
+    let groundCategory: UInt32 = 1 << 1 // 0....0010
+    let wallCategory: UInt32 = 1 << 2 // 0...0100
+    let scoreCategory: UInt32 = 1 << 3 // 0...1000
+    
+    // スコア用
+    var score = 0
+    
     // 初期表示
     override func didMove(to view: SKView) {
         
         // 重力を設定
         physicsWorld.gravity = CGVector(dx: 0, dy: -4)
+        physicsWorld.contactDelegate = self
+        
         
         backgroundColor = UIColor(red: 0.15, green: 0.75, blue: 0.90, alpha: 1)
         
@@ -77,6 +89,8 @@ class GameScene: SKScene {
             groundNode.physicsBody = SKPhysicsBody(rectangleOf: groundTexture.size())
             // 動かないように設定
             groundNode.physicsBody?.isDynamic = false
+            
+            groundNode.physicsBody?.categoryBitMask = self.groundCategory
             
             // シーンに追加
             scrollNode.addChild(groundNode)
@@ -171,6 +185,7 @@ class GameScene: SKScene {
             // 物理演算
             underWall.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
             underWall.physicsBody?.isDynamic = false
+            underWall.physicsBody?.categoryBitMask = self.wallCategory
             
             wall.addChild(underWall)
             
@@ -181,9 +196,26 @@ class GameScene: SKScene {
             // 物理演算
             upperWall.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
             upperWall.physicsBody?.isDynamic = false
+            upperWall.physicsBody?.categoryBitMask = self.wallCategory
             
             
             wall.addChild(upperWall)
+            
+            
+            // スコア用のノードを追加
+            let scoreNode = SKNode()
+            // position
+            scoreNode.position = .init(x: upperWall.size.width + birdSize.width / 2, y: self.frame.height / 2)
+            
+            // 物理演算
+            scoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: upperWall.size.width, height: self.frame.size.height))
+            scoreNode.physicsBody?.isDynamic = false
+            // ビットマスク
+            scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
+//            scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
+            
+            wall.addChild(scoreNode)
+            
             
             wall.run(wallAnimation)
             self.wallNode.addChild(wall)
@@ -220,6 +252,15 @@ class GameScene: SKScene {
         // 物理演算を設定
         bird.physicsBody = SKPhysicsBody(circleOfRadius: bird.size.height / 2)
         
+        // 回転させない
+        bird.physicsBody?.allowsRotation = false
+        
+        // 衝突のカテゴリー
+        bird.physicsBody?.categoryBitMask = self.birdCategory
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
+        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | scoreCategory
+        
+        
         // Actionを登録
         bird.run(flap)
         
@@ -234,5 +275,29 @@ class GameScene: SKScene {
         bird.physicsBody?.velocity = CGVector.zero
         // 上方向に力を加える
         bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 15))
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        
+        // 早期リターン（すでにゲームオーバーだったら）
+        if scrollNode.speed <= 0 { return }
+        
+        if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
+            print("スコアアップ",score)
+            score += 1
+        } else {
+            print("ゲームオーバー", score)
+            
+            scrollNode.speed = 0
+            
+            bird.physicsBody?.categoryBitMask = groundCategory
+            
+            
+            let roll = SKAction.rotate(byAngle: CGFloat.pi * bird.position.y * 0.01, duration: 1)
+            bird.run(roll) {
+                self.bird.speed = 0
+            }
+        }
+        
     }
 }
