@@ -226,4 +226,13 @@ class GameScene: SKScene {
         // nodeに追加
         addChild(bird)
     }
+    
+    
+    // タップ時の処理
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // 速度を一旦０にする
+        bird.physicsBody?.velocity = CGVector.zero
+        // 上方向に力を加える
+        bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 15))
+    }
 }
