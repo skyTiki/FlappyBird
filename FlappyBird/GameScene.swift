@@ -17,6 +17,10 @@ class GameScene: SKScene {
     
     // 初期表示
     override func didMove(to view: SKView) {
+        
+        // 重力を設定
+        physicsWorld.gravity = CGVector(dx: 0, dy: -4)
+        
         backgroundColor = UIColor(red: 0.15, green: 0.75, blue: 0.90, alpha: 1)
         
         // スクロール用のノードをインスタンス化し、親Viewに設定
@@ -67,6 +71,12 @@ class GameScene: SKScene {
             
             // アクションを設定
             groundNode.run(repeatScrollGround)
+            
+            
+            // 物理演算
+            groundNode.physicsBody = SKPhysicsBody(rectangleOf: groundTexture.size())
+            // 動かないように設定
+            groundNode.physicsBody?.isDynamic = false
             
             // シーンに追加
             scrollNode.addChild(groundNode)
@@ -157,11 +167,22 @@ class GameScene: SKScene {
             let underWall = SKSpriteNode(texture: wallTexture)
             underWall.position = .init(x: 0, y: underWallY)
             
+            
+            // 物理演算
+            underWall.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
+            underWall.physicsBody?.isDynamic = false
+            
             wall.addChild(underWall)
             
             // 上側の壁生成
             let upperWall = SKSpriteNode(texture: wallTexture)
             upperWall.position = .init(x: 0, y: underWallY + wallTexture.size().height + slitLength)
+            
+            // 物理演算
+            upperWall.physicsBody = SKPhysicsBody(rectangleOf: wallTexture.size())
+            upperWall.physicsBody?.isDynamic = false
+            
+            
             wall.addChild(upperWall)
             
             wall.run(wallAnimation)
@@ -194,6 +215,10 @@ class GameScene: SKScene {
         // Nodeを作成
         bird = SKSpriteNode(texture: birdTextureA)
         bird.position = .init(x: self.frame.width * 0.2, y: self.frame.height * 0.6)
+        
+        
+        // 物理演算を設定
+        bird.physicsBody = SKPhysicsBody(circleOfRadius: bird.size.height / 2)
         
         // Actionを登録
         bird.run(flap)
