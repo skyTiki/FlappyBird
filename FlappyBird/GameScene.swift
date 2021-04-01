@@ -212,7 +212,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             scoreNode.physicsBody?.isDynamic = false
             // ビットマスク
             scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
-//            scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
+            //            scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
             
             wall.addChild(scoreNode)
             
@@ -271,10 +271,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // タップ時の処理
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // 速度を一旦０にする
+        
+        if scrollNode.speed > 0 {
+            
+            // 速度を一旦０にする
+            bird.physicsBody?.velocity = CGVector.zero
+            // 上方向に力を加える
+            bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 15))
+        } else {
+            restart()
+        }
+    }
+    
+    private func restart() {
+        // スコアもどす
+        score = 0
+        
+        // 鳥のポジションを初期位置に戻す
+        bird.position = .init(x: self.frame.width * 0.2, y: self.frame.height * 0.7)
+        
+        // 鳥の物理演算,衝突検知,回転角度を設定
         bird.physicsBody?.velocity = CGVector.zero
-        // 上方向に力を加える
-        bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 15))
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
+        bird.zRotation = 0
+        
+        wallNode.removeAllChildren()
+        
+        // 鳥、スクロールノードのスピード設定
+        bird.speed = 1
+        scrollNode.speed = 1
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
