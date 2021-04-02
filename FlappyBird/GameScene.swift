@@ -342,7 +342,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             scrollNode.speed = 0
             
-            bird.physicsBody?.categoryBitMask = groundCategory
+            bird.physicsBody?.collisionBitMask = groundCategory
             
             
             let roll = SKAction.rotate(byAngle: CGFloat.pi * bird.position.y * 0.01, duration: 1)
