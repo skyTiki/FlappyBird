@@ -30,6 +30,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabelNode: SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
     
+    // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
+    var isRotatingEffect = false
+    
+    
     // 初期表示
     override func didMove(to view: SKView) {
         
@@ -279,6 +283,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // タップ時の処理
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
+        // 鳥が回転している間は処理させない
+        if isRotatingEffect { return }
+        
         if scrollNode.speed > 0 {
             
             // 速度を一旦０にする
@@ -342,6 +349,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bird.run(roll) {
                 self.bird.speed = 0
             }
+            isRotatingEffect = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.isRotatingEffect = false
+            }
+            
         }
         
     }
