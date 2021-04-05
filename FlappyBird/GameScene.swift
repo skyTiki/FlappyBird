@@ -32,6 +32,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabelNode: SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
     
+    // アイテム
+    var coinCount = 0
+    var coinCountLabel: SKLabelNode!
+    
+    
     // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
     var isRotatingEffect = false
     
@@ -62,6 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setCoin()
         
         setScoreLabel()
+        setCoinCountLabel()
     }
     
     
@@ -322,10 +328,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.coinNode.addChild(coin)
         }
         
-        let wait = SKAction.wait(forDuration: 3.0)
+        let wait = SKAction.wait(forDuration: 1.0)
         let createAnimation = SKAction.repeatForever(SKAction.sequence([createCoin,wait]))
         
         coinNode.run(createAnimation)
+        
+    }
+    
+    private func setCoinCountLabel() {
+        coinCount = 0
+        
+        coinCountLabel = SKLabelNode()
+        coinCountLabel.fontColor = .black
+        coinCountLabel.position = .init(x: 10, y: self.frame.height - 120)
+        coinCountLabel.zPosition = 100
+        coinCountLabel.horizontalAlignmentMode = .left
+        coinCountLabel.text = "Coin: \(coinCount)"
+        
+        addChild(coinCountLabel)
         
     }
     
@@ -350,6 +370,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // スコアもどす
         score = 0
         scoreLabelNode.text = "Score: \(score)"
+        
+        // アイテム
+        coinCount = 0
+        coinCountLabel.text = "Coin: \(coinCount)"
         
         // 鳥のポジションを初期位置に戻す
         bird.position = .init(x: self.frame.width * 0.2, y: self.frame.height * 0.7)
@@ -388,7 +412,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             
         } else if (contact.bodyA.categoryBitMask & coinCategory) == coinCategory || (contact.bodyB.categoryBitMask & coinCategory) == coinCategory {
-            print("coin取得")
+            // 取得したコインのノードを削除する。（基本的に一番最初のノードを取得することになるため、firstを指定）
+            coinNode.children.first?.removeFromParent()
+            coinCount += 1
+            coinCountLabel.text = "Coin: \(coinCount)"
             
         } else {
             print("ゲームオーバー", score)
