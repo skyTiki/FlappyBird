@@ -13,6 +13,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scrollNode: SKNode!
     var wallNode: SKNode!
     var coinNode: SKNode!
+    var starNode: SKNode!
     
     var bird: SKSpriteNode!
     
@@ -23,6 +24,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let wallCategory: UInt32 = 1 << 2 // 0...0100 → 4
     let scoreCategory: UInt32 = 1 << 3 // 0...1000 → 8
     let coinCategory: UInt32 = 1 << 4 // 0...10000 →16
+    let starCategory: UInt32 = 1 << 5 // 0...100000 →32
     
     // スコア用
     var score = 0
@@ -35,7 +37,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // アイテム
     var coinCount = 0
     var coinCountLabel: SKLabelNode!
-    
+    var isStarApperedStatus = false
+    var gettingStar = false
     
     // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
     var isRotatingEffect = false
@@ -55,8 +58,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scrollNode = SKNode()
         wallNode = SKNode()
         coinNode = SKNode()
+        starNode = SKNode()
         scrollNode.addChild(wallNode)
         scrollNode.addChild(coinNode)
+        scrollNode.addChild(starNode)
         addChild(scrollNode)
         
         // ノードの設定
@@ -65,6 +70,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setWall()
         setBird()
         setCoin()
+        setStar()
         
         setScoreLabel()
         setCoinCountLabel()
@@ -328,12 +334,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.coinNode.addChild(coin)
         }
         
-        let wait = SKAction.wait(forDuration: 1.0)
+        let wait = SKAction.wait(forDuration: 1.5)
         let createAnimation = SKAction.repeatForever(SKAction.sequence([createCoin,wait]))
         
         coinNode.run(createAnimation)
         
     }
+    
+    private func setStar() {
+        let starTexture = SKTexture(imageNamed: "star")
+        starTexture.filteringMode = .linear
+        
+        let starSize: CGFloat = 50
+        let scrollDistance = self.frame.width + starSize / 2
+        
+        
+        // starにつけるアクション
+        // 左スクロール
+        let scrollLeft = SKAction.moveBy(x: -(scrollDistance + starSize), y: 0, duration: 3)
+        // 上下のスクロール
+        let scrollUp = SKAction.moveTo(y: self.frame.height, duration: 2.0)
+        let groundSize = SKTexture(imageNamed: "ground").size()
+        let scrollDown = SKAction.moveTo(y: groundSize.height, duration: 2.0)
+        // 同時実行
+        let scrollActionGroup = SKAction.group([scrollLeft, SKAction.sequence([scrollDown, scrollUp])])
+        
+        let removeFromParent = SKAction.removeFromParent()
+        let starAction = SKAction.repeat(.sequence([scrollActionGroup, removeFromParent]), count: 5)
+        
+        let createStar = SKAction.run {
+            
+            if !self.isStarApperedStatus { return }
+            
+            // Starが入ってくる位置（地面からスター３つ分上〜画面上部まで）
+            let startPosition = CGFloat.random(in: (groundSize.height + starSize * 3)...(self.frame.height - starSize * 3))
+            
+            let star = SKSpriteNode(texture: starTexture)
+            star.size = .init(width: starSize, height: starSize)
+            star.position = .init(x: scrollDistance, y: startPosition)
+            star.zPosition = -30
+            
+            // 物理演算
+            star.physicsBody = SKPhysicsBody(circleOfRadius: starSize / 2)
+            star.physicsBody?.isDynamic = false
+            star.physicsBody?.categoryBitMask = self.starCategory
+            star.physicsBody?.contactTestBitMask = self.birdCategory
+            
+            star.run(starAction)
+            self.starNode.addChild(star)
+        }
+        
+        let wait = SKAction.wait(forDuration: 10.0)
+        let starAnimation = SKAction.repeatForever(SKAction.sequence([createStar, wait]))
+        starNode.run(starAnimation)
+        
+    }
+    
     
     private func setCoinCountLabel() {
         coinCount = 0
@@ -374,6 +430,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // アイテム
         coinCount = 0
         coinCountLabel.text = "Coin: \(coinCount)"
+        isStarApperedStatus = false
         
         // 鳥のポジションを初期位置に戻す
         bird.position = .init(x: self.frame.width * 0.2, y: self.frame.height * 0.7)
@@ -385,6 +442,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         wallNode.removeAllChildren()
         coinNode.removeAllChildren()
+        starNode.removeAllChildren()
         
         // 鳥、スクロールノードのスピード設定
         bird.speed = 1
@@ -397,8 +455,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if scrollNode.speed <= 0 { return }
         
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
-            print("スコアアップ",score)
             score += 1
+            print("スコアアップ",score)
             
             scoreLabelNode.text = "Score: \(score)"
             // ベストスコア更新
@@ -417,7 +475,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coinCount += 1
             coinCountLabel.text = "Coin: \(coinCount)"
             
+            if coinCount >= 5 {
+                isStarApperedStatus = true
+            }
+            print("Coin取得", coinCount)
+            
+        } else if (contact.bodyA.categoryBitMask & starCategory) == starCategory || (contact.bodyB.categoryBitMask & starCategory) == starCategory  {
+            
+            // 早期リターン（スターを取得していたら）
+            if gettingStar { return }
+            
+            // スターアイコン取得
+            print("Star取得")
+            
+            self.gettingStar = true
+            bird.physicsBody?.collisionBitMask = groundCategory
+            scrollNode.speed = 3
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                self.gettingStar = false
+                self.bird.physicsBody?.collisionBitMask = self.groundCategory | self.wallCategory
+                self.scrollNode.speed = 1
+            }
+            
         } else {
+            
+            // 早期リターン（スターを取得していたら）
+            if gettingStar { return }
+            
             print("ゲームオーバー", score)
             
             scrollNode.speed = 0
