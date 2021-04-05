@@ -9,4 +9,4 @@ TechAcademy 「FlappyBird クローン」
 ## クレジット
 - アイコンはTechAcademy提供
 - スターアイコン、コインアイコンについては下記サイトから使用
- - https://stockmaterial.net/
+   - https://stockmaterial.net/
