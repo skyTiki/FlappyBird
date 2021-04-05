@@ -12,6 +12,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // スクロール用のノードをまとめたノード
     var scrollNode: SKNode!
     var wallNode: SKNode!
+    var coinNode: SKNode!
     
     var bird: SKSpriteNode!
     
@@ -21,6 +22,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory: UInt32 = 1 << 1 // 0....0010 → 2
     let wallCategory: UInt32 = 1 << 2 // 0...0100 → 4
     let scoreCategory: UInt32 = 1 << 3 // 0...1000 → 8
+    let coinCategory: UInt32 = 1 << 4 // 0...10000 →16
     
     // スコア用
     var score = 0
@@ -42,13 +44,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 衝突時のデリゲートメソッド使用
         physicsWorld.contactDelegate = self
         
-        
         backgroundColor = UIColor(red: 0.15, green: 0.75, blue: 0.90, alpha: 1)
         
         // スクロール用のノードをインスタンス化し、親Viewに設定
         scrollNode = SKNode()
         wallNode = SKNode()
+        coinNode = SKNode()
         scrollNode.addChild(wallNode)
+        scrollNode.addChild(coinNode)
         addChild(scrollNode)
         
         // ノードの設定
@@ -56,6 +59,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setClound()
         setWall()
         setBird()
+        setCoin()
         
         setScoreLabel()
     }
@@ -279,6 +283,51 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(bird)
     }
     
+    private func setCoin() {
+        
+        // texture
+        let coinTexture = SKTexture(imageNamed: "coin")
+        coinTexture.filteringMode = .linear
+        
+        // 横幅とコインの大きさ設定
+        let scrollDistance = self.frame.width + coinTexture.size().width / 2
+        let coinSize: CGFloat = 50
+        
+        // 子ノード（coin）に設定するaction
+        let scrollCoin = SKAction.moveBy(x: -scrollDistance, y: 0, duration: 4)
+        let removeParent = SKAction.removeFromParent()
+        let coinScrollAnimation = SKAction.sequence([scrollCoin,removeParent])
+        
+        // 親ノード（coinNode)に設定するアクション
+        let createCoin = SKAction.run {
+            // コインの高さの位置を設定
+            let randomHeight = CGFloat.random(in: -(coinSize)...(coinSize*3))
+            let coinPositionY = self.frame.height / 2 + randomHeight
+            
+            // ノード作成
+            let coin = SKSpriteNode(texture: coinTexture)
+            coin.size = .init(width: coinSize, height: coinSize)
+            coin.position = .init(x: scrollDistance, y: coinPositionY)
+            coin.zPosition = -30 // 壁よりも前に表示
+            
+            // 物理演算
+            coin.physicsBody = SKPhysicsBody(circleOfRadius: coinSize / 2)
+            coin.physicsBody?.isDynamic = false
+            coin.physicsBody?.categoryBitMask = self.coinCategory
+            coin.physicsBody?.contactTestBitMask = self.birdCategory
+            
+            // アクション登録
+            coin.run(coinScrollAnimation)
+            
+            self.coinNode.addChild(coin)
+        }
+        
+        let wait = SKAction.wait(forDuration: 3.0)
+        let createAnimation = SKAction.repeatForever(SKAction.sequence([createCoin,wait]))
+        
+        coinNode.run(createAnimation)
+        
+    }
     
     // タップ時の処理
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -311,6 +360,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.zRotation = 0
         
         wallNode.removeAllChildren()
+        coinNode.removeAllChildren()
         
         // 鳥、スクロールノードのスピード設定
         bird.speed = 1
@@ -336,6 +386,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.synchronize()
             }
             
+            
+        } else if (contact.bodyA.categoryBitMask & coinCategory) == coinCategory || (contact.bodyB.categoryBitMask & coinCategory) == coinCategory {
+            print("coin取得")
             
         } else {
             print("ゲームオーバー", score)
