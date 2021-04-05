@@ -384,7 +384,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.starNode.addChild(star)
         }
         
-        let wait = SKAction.wait(forDuration: 10.0)
+        let wait = SKAction.wait(forDuration: 7)
         let starAnimation = SKAction.repeatForever(SKAction.sequence([createStar, wait]))
         starNode.run(starAnimation)
         
@@ -475,6 +475,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coinCount += 1
             coinCountLabel.text = "Coin: \(coinCount)"
             
+            // コインを５枚以上集めたら、スターを出現させる
             if coinCount >= 5 {
                 isStarApperedStatus = true
             }
@@ -486,10 +487,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if gettingStar { return }
             
             // スターアイコン取得
-            print("Star取得")
-            
+            starNode.children.first?.removeFromParent()
             self.gettingStar = true
+            
+            // 地面以外はすり抜けるようにする(Coinは取得可能)
             bird.physicsBody?.collisionBitMask = groundCategory
+            // スピードを３倍にする
             scrollNode.speed = 3
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -497,6 +500,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.bird.physicsBody?.collisionBitMask = self.groundCategory | self.wallCategory
                 self.scrollNode.speed = 1
             }
+            print("Star取得")
             
         } else {
             
