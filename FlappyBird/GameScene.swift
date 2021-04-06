@@ -38,6 +38,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gettingStar = false
     var starApearedCoinCount = 10
     
+    let coinSE = SKAudioNode(fileNamed: "coinSE.mp3")
+    let starSE = SKAudioNode(fileNamed: "starSE.mp3")
+    let gameOverSE = SKAudioNode(fileNamed: "gameoverSE.mp3")
+    
     // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
     var isRotatingEffect = false
     
@@ -59,6 +63,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // ラベルの設定
         setupLabels()
+        
+        
+        // SEの設定
+        setupAudioNodes()
     }
     
     private func initNodes() {
@@ -86,7 +94,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setScoreLabel()
         setCoinCountLabel()
     }
-    
+    private func setupAudioNodes() {
+        
+        coinSE.autoplayLooped = false
+        starSE.autoplayLooped = false
+        gameOverSE.autoplayLooped = false
+        addChild(coinSE)
+        addChild(starSE)
+        addChild(gameOverSE)
+    }
     
     // MARK: - SetupNodesでのメソッド
     private func setGround() {
@@ -515,6 +531,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coinCount += 1
             coinCountLabel.text = "Coin: \(coinCount)"
             
+            // 音楽を流す
+            playSound(sound: self.coinSE)
+            
             print("Coin取得", coinCount)
             
         // スターとの衝突の場合
@@ -535,6 +554,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bird.physicsBody?.collisionBitMask = groundCategory
             // スピードを３倍にする
             scrollNode.speed = 3
+            playSound(sound: self.starSE)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 self.gettingStar = false
@@ -555,7 +575,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             bird.physicsBody?.collisionBitMask = groundCategory
             
-            
+            playSound(sound: self.gameOverSE)
             let roll = SKAction.rotate(byAngle: CGFloat.pi * bird.position.y * 0.01, duration: 1)
             bird.run(roll) {
                 self.bird.speed = 0
@@ -566,5 +586,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.isRotatingEffect = false
             }
         }
+    }
+    
+    private func playSound(sound: SKAudioNode) {
+        self.run(
+            SKAction.run({
+                sound.run(SKAction.play())
+            })
+        )
     }
 }
