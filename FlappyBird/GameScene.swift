@@ -9,16 +9,14 @@ import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
-    // スクロール用のノードをまとめたノード
+    // ノードをまとめたノード群
     var scrollNode: SKNode!
     var wallNode: SKNode!
     var coinNode: SKNode!
     var starNode: SKNode!
-    
     var bird: SKSpriteNode!
     
-    
-    // 衝突判定カテゴリー
+    // 衝突判定カテゴリー一覧
     let birdCategory: UInt32 = 1 << 0 // 0...0001 → 1
     let groundCategory: UInt32 = 1 << 1 // 0....0010 → 2
     let wallCategory: UInt32 = 1 << 2 // 0...0100 → 4
@@ -30,11 +28,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var score = 0
     let userDefaults: UserDefaults = UserDefaults.standard
     let bestKeyName = "BEST"
-    
     var scoreLabelNode: SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
     
-    // アイテム
+    // アイテム用
     var coinCount = 0
     var coinCountLabel: SKLabelNode!
     var isStarApperedStatus = false
@@ -42,7 +39,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
     var isRotatingEffect = false
-    
     
     // 初期表示
     override func didMove(to view: SKView) {
@@ -55,6 +51,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         backgroundColor = UIColor(red: 0.15, green: 0.75, blue: 0.90, alpha: 1)
         
         // スクロール用のノードをインスタンス化し、親Viewに設定
+        initNodes()
+        
+        // ノードの設定
+        setupNodes()
+        
+        // ラベルの設定
+        setupLabels()
+    }
+    
+    private func initNodes() {
         scrollNode = SKNode()
         wallNode = SKNode()
         coinNode = SKNode()
@@ -63,20 +69,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scrollNode.addChild(coinNode)
         scrollNode.addChild(starNode)
         addChild(scrollNode)
-        
-        // ノードの設定
+    }
+    
+    private func setupNodes() {
         setGround()
         setClound()
         setWall()
         setBird()
         setCoin()
         setStar()
+    }
+    
+    private func setupLabels() {
         
         setScoreLabel()
         setCoinCountLabel()
     }
     
     
+    // MARK: - SetupNodesでのメソッド
     private func setGround() {
         
         // Textureの生成
@@ -390,7 +401,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
-    
+    // MARK: - SetupLabelでのメソッド
+    private func setScoreLabel() {
+        score = 0
+        // スコアノード
+        scoreLabelNode = SKLabelNode()
+        scoreLabelNode.fontColor = .black
+        scoreLabelNode.position = .init(x: 10, y: self.frame.height - 60)
+        scoreLabelNode.zPosition = 100
+        scoreLabelNode.horizontalAlignmentMode = .left
+        scoreLabelNode.text = "Score: \(score)"
+        self.addChild(scoreLabelNode)
+        
+        
+        // ベストスコアノード
+        bestScoreLabelNode = SKLabelNode()
+        bestScoreLabelNode.fontColor = .black
+        bestScoreLabelNode.position = .init(x: 10, y: self.frame.height - 90)
+        bestScoreLabelNode.zPosition = 100
+        bestScoreLabelNode.horizontalAlignmentMode = .left
+        
+        let bestScore = userDefaults.integer(forKey: bestKeyName)
+        bestScoreLabelNode.text = "Best Score: \(bestScore)"
+        self.addChild(bestScoreLabelNode)
+        
+    }
     private func setCoinCountLabel() {
         coinCount = 0
         
@@ -405,6 +440,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
+    // MARK: - タップ等イベント処理
     // タップ時の処理
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
@@ -454,6 +490,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 早期リターン（すでにゲームオーバーだったら）
         if scrollNode.speed <= 0 { return }
         
+        // どこと衝突したか判定
+        // スコアノードとの衝突の場合
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory {
             score += 1
             print("スコアアップ",score)
@@ -468,7 +506,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.synchronize()
             }
             
-            
+        // コインとの衝突の場合
         } else if (contact.bodyA.categoryBitMask & coinCategory) == coinCategory || (contact.bodyB.categoryBitMask & coinCategory) == coinCategory {
             // 取得したコインのノードを削除する。（基本的に一番最初のノードを取得することになるため、firstを指定）
             coinNode.children.first?.removeFromParent()
@@ -481,6 +519,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             print("Coin取得", coinCount)
             
+        // スターとの衝突の場合
         } else if (contact.bodyA.categoryBitMask & starCategory) == starCategory || (contact.bodyB.categoryBitMask & starCategory) == starCategory  {
             
             // 早期リターン（スターを取得していたら）
@@ -502,6 +541,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             print("Star取得")
             
+        // それ以外（ゲームオーバー）
         } else {
             
             // 早期リターン（スターを取得していたら）
@@ -523,34 +563,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.isRotatingEffect = false
             }
-            
         }
-        
-    }
-    
-    
-    private func setScoreLabel() {
-        score = 0
-        // スコアノード
-        scoreLabelNode = SKLabelNode()
-        scoreLabelNode.fontColor = .black
-        scoreLabelNode.position = .init(x: 10, y: self.frame.height - 60)
-        scoreLabelNode.zPosition = 100
-        scoreLabelNode.horizontalAlignmentMode = .left
-        scoreLabelNode.text = "Score: \(score)"
-        self.addChild(scoreLabelNode)
-        
-        
-        // ベストスコアノード
-        bestScoreLabelNode = SKLabelNode()
-        bestScoreLabelNode.fontColor = .black
-        bestScoreLabelNode.position = .init(x: 10, y: self.frame.height - 90)
-        bestScoreLabelNode.zPosition = 100
-        bestScoreLabelNode.horizontalAlignmentMode = .left
-        
-        let bestScore = userDefaults.integer(forKey: bestKeyName)
-        bestScoreLabelNode.text = "Best Score: \(bestScore)"
-        self.addChild(bestScoreLabelNode)
-        
     }
 }
