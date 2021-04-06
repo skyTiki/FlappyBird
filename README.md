@@ -10,3 +10,5 @@ TechAcademy 「FlappyBird クローン」
 - アイコンはTechAcademy提供
 - スターアイコン、コインアイコンについては下記サイトから使用
    - https://stockmaterial.net/
+- SE
+   - https://soundeffect-lab.info/
