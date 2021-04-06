@@ -585,6 +585,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.isRotatingEffect = false
             }
+            
+            let rankingView = RankingView()
+            self.view?.addSubview(rankingView)
+            
         }
     }
     
