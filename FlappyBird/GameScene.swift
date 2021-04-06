@@ -477,6 +477,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func restart() {
+        
+        self.view?.subviews.first?.removeFromSuperview()
+        
         // スコアもどす
         score = 0
         scoreLabelNode.text = "Score: \(score)"
@@ -524,7 +527,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.synchronize()
             }
             
-        // コインとの衝突の場合
+            // コインとの衝突の場合
         } else if (contact.bodyA.categoryBitMask & coinCategory) == coinCategory || (contact.bodyB.categoryBitMask & coinCategory) == coinCategory {
             // 取得したコインのノードを削除する。（基本的に一番最初のノードを取得することになるため、firstを指定）
             coinNode.children.first?.removeFromParent()
@@ -536,7 +539,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             print("Coin取得", coinCount)
             
-        // スターとの衝突の場合
+            // スターとの衝突の場合
         } else if (contact.bodyA.categoryBitMask & starCategory) == starCategory || (contact.bodyB.categoryBitMask & starCategory) == starCategory  {
             
             // 早期リターン（スターを取得していたら）
@@ -563,7 +566,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             print("Star取得")
             
-        // それ以外（ゲームオーバー）
+            // それ以外（ゲームオーバー）
         } else {
             
             // 早期リターン（スターを取得していたら）
@@ -586,8 +589,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 self.isRotatingEffect = false
             }
             
-            let rankingView = RankingView()
+            // ランキングに関する処理
+            let bestScore = userDefaults.integer(forKey: bestKeyName)
+            var secondScore = userDefaults.integer(forKey: "Second")
+            var thirdScore = userDefaults.integer(forKey: "Third")
+            
+            // ベストスコアの時は処理は行わない
+            if score != bestScore  {
+                
+                if score > secondScore {
+                    secondScore = score
+                    userDefaults.set(secondScore, forKey: "Second")
+                } else if score > thirdScore {
+                    thirdScore = score
+                    userDefaults.set(thirdScore, forKey: "Third")
+                }
+            }
+            
+            
+            let rankingView = RankingView(frame: CGRect(x: self.frame.maxX / 4, y: self.frame.maxY / 4 , width: 206, height: 222))
+//                frame: CGRect(x: self.frame.maxX / 4, y: self.frame.maxY / 4 , width: 206, height: 222))
+            
+            rankingView.setScoreLabel(topScore: bestScore, secondScore: secondScore, thirdScore: thirdScore)
             self.view?.addSubview(rankingView)
+            
             
         }
     }
