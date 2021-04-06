@@ -36,6 +36,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var coinCountLabel: SKLabelNode!
     var isStarApperedStatus = false
     var gettingStar = false
+    var starApearedCoinCount = 10
     
     // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
     var isRotatingEffect = false
@@ -364,9 +365,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 左スクロール
         let scrollLeft = SKAction.moveBy(x: -(scrollDistance + starSize), y: 0, duration: 3)
         // 上下のスクロール
-        let scrollUp = SKAction.moveTo(y: self.frame.height, duration: 2.0)
+        let scrollUp = SKAction.moveTo(y: self.frame.height - starSize * 2, duration: 2.0)
         let groundSize = SKTexture(imageNamed: "ground").size()
-        let scrollDown = SKAction.moveTo(y: groundSize.height, duration: 2.0)
+        let scrollDown = SKAction.moveTo(y: groundSize.height + starSize * 4, duration: 2.0)
         // 同時実行
         let scrollActionGroup = SKAction.group([scrollLeft, SKAction.sequence([scrollDown, scrollUp])])
         
@@ -375,10 +376,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         let createStar = SKAction.run {
             
-            if !self.isStarApperedStatus { return }
+            // コインが10枚未満であれば早期リターン
+            if self.coinCount < self.starApearedCoinCount { return }
             
             // Starが入ってくる位置（地面からスター３つ分上〜画面上部まで）
-            let startPosition = CGFloat.random(in: (groundSize.height + starSize * 3)...(self.frame.height - starSize * 3))
+            let startPosition = CGFloat.random(in: (groundSize.height + starSize * 4)...(self.frame.height - starSize * 2))
             
             let star = SKSpriteNode(texture: starTexture)
             star.size = .init(width: starSize, height: starSize)
@@ -395,7 +397,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.starNode.addChild(star)
         }
         
-        let wait = SKAction.wait(forDuration: 7)
+        let wait = SKAction.wait(forDuration: 10)
         let starAnimation = SKAction.repeatForever(SKAction.sequence([createStar, wait]))
         starNode.run(starAnimation)
         
@@ -513,10 +515,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             coinCount += 1
             coinCountLabel.text = "Coin: \(coinCount)"
             
-            // コインを５枚以上集めたら、スターを出現させる
-            if coinCount >= 5 {
-                isStarApperedStatus = true
-            }
             print("Coin取得", coinCount)
             
         // スターとの衝突の場合
@@ -529,7 +527,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             starNode.children.first?.removeFromParent()
             self.gettingStar = true
             
-            // 地面以外はすり抜けるようにする(Coinは取得可能)
+            // coinを10枚消費する
+            coinCount -= starApearedCoinCount
+            coinCountLabel.text = "Coin: \(coinCount)"
+            
+            // 地面以外はすり抜けるようにする
             bird.physicsBody?.collisionBitMask = groundCategory
             // スピードを３倍にする
             scrollNode.speed = 3
