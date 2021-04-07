@@ -10,6 +10,8 @@
 		A10A31E8261C274D00E1DA73 /* coinSE.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10A31E6261C274D00E1DA73 /* coinSE.mp3 */; };
 		A10A31EC261C2D3300E1DA73 /* gameoverSE.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10A31EB261C2D3300E1DA73 /* gameoverSE.mp3 */; };
 		A10A31F0261C2F1600E1DA73 /* starSE.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10A31EF261C2F1600E1DA73 /* starSE.mp3 */; };
+		A10A31F5261C34E100E1DA73 /* Ranking.xib in Resources */ = {isa = PBXBuildFile; fileRef = A10A31F4261C34E100E1DA73 /* Ranking.xib */; };
+		A10A31F8261C34F500E1DA73 /* RankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10A31F7261C34F400E1DA73 /* RankingView.swift */; };
 		A1B5905626142C9000418B53 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B5905526142C9000418B53 /* AppDelegate.swift */; };
 		A1B5905826142C9000418B53 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B5905726142C9000418B53 /* SceneDelegate.swift */; };
 		A1B5905A26142C9000418B53 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B5905926142C9000418B53 /* ViewController.swift */; };
@@ -23,6 +25,8 @@
 		A10A31E6261C274D00E1DA73 /* coinSE.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = coinSE.mp3; sourceTree = "<group>"; };
 		A10A31EB261C2D3300E1DA73 /* gameoverSE.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gameoverSE.mp3; sourceTree = "<group>"; };
 		A10A31EF261C2F1600E1DA73 /* starSE.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = starSE.mp3; sourceTree = "<group>"; };
+		A10A31F4261C34E100E1DA73 /* Ranking.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Ranking.xib; sourceTree = "<group>"; };
+		A10A31F7261C34F400E1DA73 /* RankingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingView.swift; sourceTree = "<group>"; };
 		A1B5905226142C9000418B53 /* FlappyBird.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlappyBird.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B5905526142C9000418B53 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A1B5905726142C9000418B53 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -79,6 +83,8 @@
 				A1B5905926142C9000418B53 /* ViewController.swift */,
 				A1B5906B2614301800418B53 /* GameScene.swift */,
 				A1B5905B26142C9000418B53 /* Main.storyboard */,
+				A10A31F4261C34E100E1DA73 /* Ranking.xib */,
+				A10A31F7261C34F400E1DA73 /* RankingView.swift */,
 				A1B5905E26142C9200418B53 /* Assets.xcassets */,
 				A1B5906026142C9200418B53 /* LaunchScreen.storyboard */,
 				A1B5906326142C9200418B53 /* Info.plist */,
@@ -144,6 +150,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10A31F5261C34E100E1DA73 /* Ranking.xib in Resources */,
 				A10A31F0261C2F1600E1DA73 /* starSE.mp3 in Resources */,
 				A10A31E8261C274D00E1DA73 /* coinSE.mp3 in Resources */,
 				A1B5906226142C9200418B53 /* LaunchScreen.storyboard in Resources */,
@@ -162,6 +169,7 @@
 			files = (
 				A1B5905A26142C9000418B53 /* ViewController.swift in Sources */,
 				A1B5905626142C9000418B53 /* AppDelegate.swift in Sources */,
+				A10A31F8261C34F500E1DA73 /* RankingView.swift in Sources */,
 				A1B5906C2614301800418B53 /* GameScene.swift in Sources */,
 				A1B5905826142C9000418B53 /* SceneDelegate.swift in Sources */,
 			);
