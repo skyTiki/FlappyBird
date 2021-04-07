@@ -608,9 +608,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             
             let rankingView = RankingView(frame: CGRect(x: self.frame.maxX / 4, y: self.frame.maxY / 4 , width: 206, height: 222))
-//                frame: CGRect(x: self.frame.maxX / 4, y: self.frame.maxY / 4 , width: 206, height: 222))
-            
-            rankingView.setScoreLabel(topScore: bestScore, secondScore: secondScore, thirdScore: thirdScore)
+            rankingView.setScoreLabel(bestScore: bestScore, secondScore: secondScore, thirdScore: thirdScore)
             self.view?.addSubview(rankingView)
             
             
