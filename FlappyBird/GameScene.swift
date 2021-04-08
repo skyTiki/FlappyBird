@@ -21,6 +21,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory: UInt32 = 1 << 1 // 0....0010 → 2
     let wallCategory: UInt32 = 1 << 2 // 0...0100 → 4
     let scoreCategory: UInt32 = 1 << 3 // 0...1000 → 8
+    // アイテムカテゴリー
     let coinCategory: UInt32 = 1 << 4 // 0...10000 →16
     let starCategory: UInt32 = 1 << 5 // 0...100000 →32
     
@@ -34,15 +35,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // アイテム用
     var coinCount = 0
     var coinCountLabel: SKLabelNode!
+    // スターが出現する状態かどうか（コインが１０枚以上持っていたらTrue）
     var isStarApperedStatus = false
-    var gettingStar = false
     var starApearedCoinCount = 10
+    // スターが取得中かどうか
+    var gettingStar = false
     
+    // SE
     let coinSE = SKAudioNode(fileNamed: "coinSE.mp3")
     let starSE = SKAudioNode(fileNamed: "starSE.mp3")
     let gameOverSE = SKAudioNode(fileNamed: "gameoverSE.mp3")
     
-    // ゲームオーバー時のRotateエフェクト中はリスタートさせないためのフラグ
+    // ゲームオーバー時のRotateエフェクト中にリスタートさせないためのフラグ
     var isRotatingEffect = false
     
     // 初期表示
@@ -63,7 +67,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // ラベルの設定
         setupLabels()
-        
         
         // SEの設定
         setupAudioNodes()
@@ -329,7 +332,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let coinTexture = SKTexture(imageNamed: "coin")
         coinTexture.filteringMode = .linear
         
-        // 横幅とコインの大きさ設定
+        // スクロール幅とコインの大きさ設定
         let scrollDistance = self.frame.width + coinTexture.size().width / 2
         let coinSize: CGFloat = 50
         
@@ -384,12 +387,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let scrollUp = SKAction.moveTo(y: self.frame.height - starSize * 2, duration: 2.0)
         let groundSize = SKTexture(imageNamed: "ground").size()
         let scrollDown = SKAction.moveTo(y: groundSize.height + starSize * 4, duration: 2.0)
-        // 同時実行
-        let scrollActionGroup = SKAction.group([scrollLeft, SKAction.sequence([scrollDown, scrollUp])])
+        // 同時実行 （５往復させる）
+        let scrollActionGroup = SKAction.repeat(.group([scrollLeft, SKAction.sequence([scrollDown, scrollUp])]), count: 5)
         
         let removeFromParent = SKAction.removeFromParent()
-        let starAction = SKAction.repeat(.sequence([scrollActionGroup, removeFromParent]), count: 5)
+        let starAction = SKAction.sequence([scrollActionGroup, removeFromParent])
         
+        // 親ノード(starNodeにつけるアクション)
         let createStar = SKAction.run {
             
             // コインが10枚未満であれば早期リターン
@@ -478,6 +482,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     private func restart() {
         
+        // ランキング画面を消す
         self.view?.subviews.first?.removeFromSuperview()
         
         // スコアもどす
@@ -545,20 +550,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // 早期リターン（スターを取得していたら）
             if gettingStar { return }
             
-            // スターアイコン取得
+            // 取得したスターアイコンを消す
             starNode.children.first?.removeFromParent()
-            self.gettingStar = true
             
+            self.gettingStar = true
             // coinを10枚消費する
             coinCount -= starApearedCoinCount
             coinCountLabel.text = "Coin: \(coinCount)"
             
             // 地面以外はすり抜けるようにする
             bird.physicsBody?.collisionBitMask = groundCategory
+            
             // スピードを３倍にする
             scrollNode.speed = 3
             playSound(sound: self.starSE)
             
+            // ３秒後元にもどす
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 self.gettingStar = false
                 self.bird.physicsBody?.collisionBitMask = self.groundCategory | self.wallCategory
